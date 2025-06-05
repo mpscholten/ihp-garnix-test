@@ -67,6 +67,8 @@
                         security.acme.defaults.email = "letsencrypt@digitallyinduced.com";
                         security.acme.acceptTerms = true;
 
+                        environment.systemPackages = with pkgs; [ vim ];
+
                         services.ihp = {
                             domain = "example.com";
                             migrations = ./Application/Migration;
