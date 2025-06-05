@@ -75,7 +75,7 @@
                             migrations = ./Application/Migration;
                             schema = ./Application/Schema.sql;
                             fixtures = ./Application/Fixtures.sql;
-                            # sessionSecret = "CHANGE-ME";
+                            sessionSecret = "1J8jtRW331a0IbHBCHmsFNoesQUNFnuHqY8cB5927KsoV5sYmiq3DMmvsYk5S7EDma9YhqZLZWeTFu2pGOxMT2F/5PnifW/5ffwJjZvZcJh9MKPh3Ez9fmPEyxZBDxVp";
                             # Uncomment to use a custom database URL
                             # databaseUrl = lib.mkForce "postgresql://postgres:...CHANGE-ME";
                         };
