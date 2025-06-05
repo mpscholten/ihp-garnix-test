@@ -68,6 +68,7 @@
                         security.acme.acceptTerms = true;
 
                         environment.systemPackages = with pkgs; [ vim ];
+                        programs.vim.enable = true;
 
                         services.ihp = {
                             domain = "example.com";
