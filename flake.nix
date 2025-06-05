@@ -5,9 +5,13 @@
         flake-parts.follows = "ihp/flake-parts";
         devenv.follows = "ihp/devenv";
         systems.follows = "ihp/systems";
+        garnix-lib = {
+            url = "github:garnix-io/garnix-lib";
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
     };
 
-    outputs = inputs@{ self, nixpkgs, ihp, flake-parts, systems, ... }:
+    outputs = inputs@{ self, nixpkgs, ihp, flake-parts, systems, garnix-lib, ... }:
         flake-parts.lib.mkFlake { inherit inputs; } {
 
             systems = import systems;
@@ -47,69 +51,28 @@
                 };
             };
 
-            # Adding the new NixOS configuration for "qa"
-            # See https://ihp.digitallyinduced.com/Guide/deployment.html#deploying-with-deploytonixos for more info
-            # Used to deploy the IHP application to AWS.
-            #
-            # Change the `CHANGE-ME` to your correct config.
-            flake.nixosConfigurations."qa" = nixpkgs.lib.nixosSystem {
+            flake.nixosConfigurations."production" = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
                 specialArgs = inputs;
                 modules = [
-                    "${nixpkgs}/nixos/modules/virtualisation/amazon-image.nix"
+                    garnix-lib.nixosModules.garnix
                     ihp.nixosModules.appWithPostgres
                     ({ lib, pkgs, ... }: {
-
+                        garnix.server.enable = true;
                         networking.firewall = {
                             enable = true;
                             allowedTCPPorts = [ 22 80 443 ];
                         };
 
-                        # Enable the Let's encrypt certificate
-                        security.acme.defaults.email = "CHANGE-ME@example.com";
-
-                        # Accept the terms of service of the Let's encrypt provider.
-                        security.acme.acceptTerms = true;
-
-                        services.nginx = {
-                            virtualHosts."CHANGE-ME.com" =  {
-                                # Uncomment to have http auth with username `foo` and password `bar`.
-                                # basicAuth = { foo = "bar"; };
-                            };
-                        };
-
                         services.ihp = {
-                            domain = "CHANGE-ME.com";
+                            domain = "example.com";
                             migrations = ./Application/Migration;
                             schema = ./Application/Schema.sql;
                             fixtures = ./Application/Fixtures.sql;
-                            sessionSecret = "CHANGE-ME";
+                            # sessionSecret = "CHANGE-ME";
                             # Uncomment to use a custom database URL
                             # databaseUrl = lib.mkForce "postgresql://postgres:...CHANGE-ME";
-
-                            additionalEnvVars = {
-                                # Uncomment to use a custom session secret, ensuring sessions aren't invalidated
-                                # on each deploy.
-                                # Learn how to create the secret key in https://ihp.digitallyinduced.com/Guide/deployment.html#ihpsessionsecret
-                                # IHP_SESSION_SECRET = "CHANGE-ME";
-
-                                SMTP_HOST = "email-smtp.eu-west-1.amazonaws.com";
-                                SMTP_PORT = "587";
-                                SMTP_ENCRYPTION = "STARTTLS";
-
-                                SMTP_USER = "CHANGE-ME";
-                                SMTP_PASSWORD = "CHANGE-ME";
-
-                                AWS_ACCESS_KEY_ID = "CHANGE-ME";
-                                AWS_SECRET_ACCESS_KEY = "CHANGE-ME";
-                            };
                         };
-                        # As we use a pre-built AMI on AWS,
-                        # it is essential to enable automatic updates.
-                        # @see https://nixos.wiki/wiki/Automatic_system_upgrades
-                        system.autoUpgrade.enable = true;
-                        # Keep as is. See https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-                        system.stateVersion = "23.05";
                     })
                 ];
             };
