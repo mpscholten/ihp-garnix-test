@@ -64,6 +64,9 @@
                             allowedTCPPorts = [ 22 80 443 ];
                         };
 
+                        security.acme.defaults.email = "letsencrypt@digitallyinduced.com";
+                        security.acme.acceptTerms = true;
+
                         services.ihp = {
                             domain = "example.com";
                             migrations = ./Application/Migration;
