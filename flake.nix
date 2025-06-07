@@ -67,6 +67,8 @@
                         security.acme.defaults.email = "letsencrypt@digitallyinduced.com";
                         security.acme.acceptTerms = true;
 
+                        services.nginx.enable = lib.mkForce false;
+
                         environment.systemPackages = with pkgs; [ vim ];
                         programs.vim.enable = true;
 
