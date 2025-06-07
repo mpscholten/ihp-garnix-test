@@ -67,7 +67,16 @@
                         security.acme.defaults.email = "letsencrypt@digitallyinduced.com";
                         security.acme.acceptTerms = true;
 
-                        services.nginx.enable = lib.mkForce false;
+                        # services.nginx.enable = lib.mkForce false;
+                        services.nginx.virtualHosts."example.com".enableACME = lib.mkForce false;
+                        services.nginx.virtualHosts.default = {
+                            default = true;
+                            locations."/" = {
+                                proxyPass = "http://localhost:8000";
+                                proxyWebsockets = true;
+                            };
+                        };
+
                         systemd.services.worker.enable = lib.mkForce false;
 
                         environment.systemPackages = with pkgs; [ vim ];
