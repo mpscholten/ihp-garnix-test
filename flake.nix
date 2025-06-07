@@ -68,6 +68,7 @@
                         security.acme.acceptTerms = true;
 
                         services.nginx.enable = lib.mkForce false;
+                        systemd.services.worker.enable = lib.mkForce false;
 
                         environment.systemPackages = with pkgs; [ vim ];
                         programs.vim.enable = true;
