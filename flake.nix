@@ -56,8 +56,8 @@
                 specialArgs = inputs;
                 modules = [
                     garnix-lib.nixosModules.garnix
-                    ihp.nixosModules.appWithPostgres
-                    ({ lib, pkgs, ... }: {
+                    ihp.nixosModules.app
+                    ({ config, ihp, lib, pkgs, ... }: {
                         garnix.server.enable = true;
                         networking.firewall = {
                             enable = true;
@@ -67,13 +67,19 @@
                         security.acme.defaults.email = "letsencrypt@digitallyinduced.com";
                         security.acme.acceptTerms = true;
 
-                        # services.nginx.enable = lib.mkForce false;
-                        services.nginx.virtualHosts."example.com".enableACME = lib.mkForce false;
-                        services.nginx.virtualHosts.default = {
-                            default = true;
-                            locations."/" = {
-                                proxyPass = "http://localhost:8000";
-                                proxyWebsockets = true;
+                        services.nginx = {
+                            enable = true;
+                            enableReload = true;
+                            recommendedProxySettings = true;
+                            recommendedGzipSettings = true;
+                            recommendedOptimisation = true;
+                            recommendedTlsSettings = true;
+                            virtualHosts.default = {
+                                default = true;
+                                locations."/" = {
+                                    proxyPass = "http://localhost:8000";
+                                    proxyWebsockets = true;
+                                };
                             };
                         };
 
@@ -91,6 +97,33 @@
                             # Uncomment to use a custom database URL
                             # databaseUrl = lib.mkForce "postgresql://postgres:...CHANGE-ME";
                         };
+
+                        # Postgres
+                        services.postgresql = {
+                            enable = true;
+                            initialScript = let
+                                cfg = config.services.ihp;
+                                in pkgs.writeText "ihp-initScript" ''
+                                    CREATE USER ${cfg.databaseUser};
+                                    CREATE DATABASE ${cfg.databaseName} OWNER ${cfg.databaseUser};
+                                    GRANT ALL PRIVILEGES ON DATABASE ${cfg.databaseName} TO "${cfg.databaseUser}";
+                                    \connect ${cfg.databaseName}
+                                    SET ROLE '${cfg.databaseUser}';
+                                    CREATE TABLE IF NOT EXISTS schema_migrations (revision BIGINT NOT NULL UNIQUE);
+                                    \i ${ihp}/lib/IHP/IHPSchema.sql
+                                    \i ${cfg.schema}
+                                    \i ${cfg.fixtures}
+                                '';
+                        };
+
+                        services.ihp.databaseUser = "root";
+                        services.ihp.databaseUrl = let cfg = config.services.ihp; in "postgresql://${cfg.databaseUser}@/${cfg.databaseName}";
+
+                        environment.variables = let cfg = config.services.ihp; in {
+                            PGUSER = cfg.databaseUser;
+                            PGDATABASE = cfg.databaseName;
+                        };
+
                     })
                 ];
             };
