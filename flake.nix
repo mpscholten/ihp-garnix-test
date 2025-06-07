@@ -124,6 +124,10 @@
                             PGDATABASE = cfg.databaseName;
                         };
 
+                        users.users.root.openssh.authorizedKeys.keys =
+                            [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDYIj7v/n2OOlUw4llSohyExviZYyzWXei1CbLZAkNTa71MI2Wr/UJLquMbe/rRJTCf48I554DOLNdFR/WiVjF2GK/EQ3ZEr6hOrn0xbb0jFuM1SRX3CYJLy+c+0synEIMs2u1laskWBi7XDL+tkxDcCwEqLbEGu/P1azysm1Yc3ZRxE3gM8OiCpVM8PQG8dSNLKuNV4YZd0tJSaziXt6i8C7qBrsLVFCaDqyX7Y6sJQf4OOttfsqfhhfnLZGOrRbUuHG70fkPS/7V1KI5kw2C0aqAcgr57InYiIDB49SOkh0qszrIXSxROSb+1wYrg6cZRpW3QuD0cEgqMW0Xd2Hfj marcphilipscholten@gmail.com"
+                            ];
+
                     })
                 ];
             };
